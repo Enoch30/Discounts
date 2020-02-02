@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Discount Exercise</title>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/all.css">
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material Design Bootstrap -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.10.1/css/mdb.min.css" rel="stylesheet">
+    <!-- JQuery -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <!-- Bootstrap tooltips -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.4/umd/popper.min.js"></script>
+    <!-- Bootstrap core JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+    <!-- MDB core JavaScript -->
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.10.1/js/mdb.min.js"></script>
+
+    <script>
+
+        /*
+            On a large scale, this items data would be gotten from an API endpoint
+         */
+
+        let items = {
+            itemA:{
+                name : "Item A's Name",
+                price : 8,
+                discount : null
+            },
+            itemB: {
+                name : "Item B's Name",
+                price : 12,
+                discount : '2 for £20'
+            },
+            itemC: {
+                name : "Item C's Name",
+                price : 4,
+                discount : '3 for £10'
+            },
+            itemD: {
+                name : "Item D's Name",
+                price : 7,
+                discount : '1, 1 free'
+            },
+            itemE: {
+                name : "Item E's Name",
+                price : 5,
+                discount : '3 for price 2'
+            },
+        };
+
+        //adds item by increasing the amount key in each item.
+        function addToBasket(item){
+            if( items[item].amount){
+                items[item].amount ++;
+            } else {
+                items[item].amount = 1;
+            }
+        }
+
+        function removeFromBasket(item){
+            if( items[item].amount !== 0){
+                items[item].amount --;
+            }
+        }
+
+
+        /*
+            Time complexity - O(1)
+            With the algorithm below, several items could use the same discount, e.g. '1, 1 free' on multiple items
+         */
+        function calcTotalPrice(){
+            let total = {
+                price: 0,
+                delivery: 0
+            };
+
+            for (let item in items){
+                if(items[item].amount && items[item].amount > 0) {
+
+                    //item A
+                    if(!items[item].discount) {
+                        total.price += items[item].amount * items[item].price;
+                    }
+
+                    //item B
+                    if (items[item].discount === '2 for £20') {
+                        if(items[item].amount % 2){
+                            total.price += Math.round((items[item].amount-items[item].amount % 2) * items[item].price * 0.83333) + items[item].price;
+                        } else {
+                            total.price += Math.round(items[item].amount * items[item].price * 0.83333)
+                        }
+                    }
+
+                    //item C
+                    if (items[item].discount === '3 for £10') {
+                        if(items[item].amount % 3){
+                            total.price += Math.round((items[item].amount-items[item].amount % 3) * items[item].price * 0.83333) + (items[item].price * (items[item].amount % 3));
+                        } else {
+                            total.price += Math.round(items[item].amount * items[item].price * 0.83333)
+                        }
+                    }
+
+                    //item D
+                    if (items[item].discount === '1, 1 free') {
+                        if(items[item].amount % 2 === 0 && items[item].amount >= 2){
+                            total.price += items[item].price * items[item].amount / 2;
+                        }
+                        else {
+                            //Front end could avoid this by adding 2 per selection
+                            return window.alert('Add one more of (' + items[item].name + ') for FREE')
+                        }
+                    }
+
+                    //item E
+                    if(items[item].discount === '3 for price 2'){
+                        total.price += Math.round((items[item].amount - (items[item].amount % 3)) * items[item].price * 0.6667 + items[item].price * (items[item].amount % 3));
+                    }
+                }
+            }
+
+            if (total.price < 50 && total.price !== 0){
+                total.delivery = 7;
+            }
+
+
+            window.alert(
+                'For ' +
+                ((items['itemA'].amount === undefined || items['itemA'].amount === 0) ? '' : '\nItem A X ' + items['itemA'].amount) +
+                ((items['itemB'].amount === undefined || items['itemB'].amount === 0) ? '' : '\nItem B X ' + items['itemB'].amount) +
+                ((items['itemC'].amount === undefined || items['itemC'].amount === 0) ? '' : '\nItem C X ' + items['itemC'].amount) +
+                ((items['itemD'].amount === undefined || items['itemD'].amount === 0) ? '' : '\nItem D X ' + items['itemD'].amount) +
+                ((items['itemE'].amount === undefined || items['itemE'].amount === 0) ? '' : '\nItem E X ' + items['itemE'].amount) +
+
+                '\n\n Your price is: £' +
+                total.price
+                +
+                '\n\n And your delivery fee is: £' +
+                total.delivery
+
+            );
+
+            items['itemA'].amount = 0;
+            items['itemB'].amount = 0;
+            items['itemC'].amount = 0;
+            items['itemD'].amount = 0;
+            items['itemE'].amount = 0;
+
+        }
+
+    </script>
+</head>
+<body>
+
+<div id="addOne" class="alert alert-primary text-center" role="alert">
+    Discounts exercise
+</div>
+
+<!-- Using angularJs or VueJs, this could be rendered with ng-repeat or v-for instead-->
+<div class="col-md-12">
+    <div class="container-fluid pt-3 text-center">
+        <p>Item A - £8 <span class="text-muted"> | No discount</span></p>
+        <button type="button" class="btn btn-danger" onclick="removeFromBasket('itemA')">Remove</button>
+        <button type="button" class="btn btn-primary" onclick="addToBasket('itemA')">Add</button>
+    </div>
+    <div class="container-fluid pt-3 text-center">
+        <p>Item B - £12 <span class="text-muted pl-2"> | 2 for £20</span></p>
+        <button type="button" class="btn btn-danger" onclick="removeFromBasket('itemB')">Remove</button>
+        <button type="button" class="btn btn-primary" onclick="addToBasket('itemB')">Add</button>
+    </div>
+    <div class="container-fluid pt-3 text-center">
+        <p>Item C - £4 <span class="text-muted pl-2"> | 3 for £10</span></p>
+        <button type="button" class="btn btn-danger" onclick="removeFromBasket('itemC')">Remove</button>
+        <button type="button" class="btn btn-primary" onclick="addToBasket('itemC')">Add</button>
+    </div>
+    <div class="container-fluid pt-3 text-center">
+        <p>Item D - £7 <span class="text-muted pl-2"> | Buy 1, get 1 free</span></p>
+        <button type="button" class="btn btn-danger" onclick="removeFromBasket('itemD')">Remove</button>
+        <button type="button" class="btn btn-primary" onclick="addToBasket('itemD')">Add</button>
+    </div>
+    <div class="container-fluid pt-3 text-center">
+        <p>Item E - £5  <span class="text-muted pl-2"> | 3 for the Price of 2</span></p>
+        <button type="button" class="btn btn-danger" onclick="removeFromBasket('itemE')">Remove</button>
+        <button type="button" class="btn btn-primary" onclick="addToBasket('itemE')">Add</button>
+    </div>
+    <hr>
+    <div class="container-fluid text-center">
+        <button type="button" class="btn btn-secondary" onclick="calcTotalPrice()">Calculate price</button>
+    </div>
+</div>
+
+</body>
+</html>
+
